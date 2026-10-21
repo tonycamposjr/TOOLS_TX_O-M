@@ -1,0 +1,8 @@
+# Limites de aceitação e certificação para redes ópticas (OTDR)
+max_splice_loss_db: 0.10          # Perda máxima permitida por fusão/emenda (dB)
+max_connector_loss_db: 0.50       # Perda máxima permitida por conector (dB)
+max_reflectance_db: -40.0         # Refletância máxima permitida em conectores (dB)
+max_attenuation_1310_db_km: 0.38  # Atenuação linear máxima em 1310 nm (dB/km)
+max_attenuation_1550_db_km: 0.22  # Atenuação linear máxima em 1550 nm (dB/km)
+max_total_link_loss_db: 15.0      # Perda total máxima do enlace (dB)
+min_link_orl_db: 30.0              # ORL mínimo aceitável (dB)

@@ -1,0 +1,9 @@
+{
+  "max_splice_loss_db": 0.10,
+  "max_connector_loss_db": 0.50,
+  "max_reflectance_db": -40.0,
+  "max_attenuation_1310_db_km": 0.38,
+  "max_attenuation_1550_db_km": 0.22,
+  "max_total_link_loss_db": 15.0,
+  "min_link_orl_db": 30.0
+}

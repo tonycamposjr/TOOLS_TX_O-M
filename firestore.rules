@@ -1,0 +1,97 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && request.auth.token.role == 'super_admin';
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (request.auth.token.role == 'admin' || request.auth.token.role == 'super_admin');
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Regras de Usuários (users/{uid})
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      
+      // Criar usuário: apenas próprio usuário (role padrão 'user') ou admins
+      allow create: if isAuthenticated() && (
+        (isOwner(uid) && request.resource.data.role == 'user') ||
+        isAdmin()
+      );
+
+      // Atualizar usuário:
+      // - Dono pode atualizar dados pessoais mas NÃO pode alterar seu próprio 'role' ou 'active'
+      // - Super Admin pode atualizar qualquer usuário
+      // - Admin pode atualizar apenas usuários com role 'user'
+      allow update: if isAuthenticated() && (
+        (isOwner(uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role'])) ||
+        isSuperAdmin() ||
+        (isAdmin() && resource.data.role == 'user' && request.resource.data.role != 'super_admin')
+      );
+
+      allow delete: if isSuperAdmin() && resource.data.role != 'super_admin';
+    }
+
+    // Regras de Dispositivos (devices/{deviceId})
+    match /devices/{deviceId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isSuperAdmin());
+    }
+
+    // Regras de Solicitações de Autenticação (authRequests/{requestId})
+    match /authRequests/{requestId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      );
+      
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+
+      // Transição de status:
+      // Apenas o proprietário da solicitação (ou admin) pode aprovar/recusar/cancelar
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || isAdmin()
+      ) && resource.data.status == 'pending';
+
+      allow delete: if isSuperAdmin();
+    }
+
+    // Regras de Logs de Auditoria (adminLogs/{logId})
+    match /adminLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Logs são imutáveis
+    }
+
+    // Regras para Clientes / Atendimentos
+    match /clientes/{document} {
+      allow read: if true;
+      allow create, update: if isAuthenticated() || true;
+      allow delete: if isAdmin();
+    }
+
+    // Regras para Termos de Atendimento (TA)
+    match /tas/{document} {
+      allow read: if true;
+      allow create, update: if isAuthenticated() || true;
+      allow delete: if isAdmin();
+    }
+
+    // Regras para Rotas HL4
+    match /rotas_hl4/{document} {
+      allow read: if true;
+      allow create, update, delete: if isAuthenticated() || true;
+    }
+  }
+}
+

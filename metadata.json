@@ -1,0 +1,6 @@
+{
+  "name": "Sistema Unificado de Ferramentas de Rede",
+  "description": "Sistema integrado de ferramentas de rede, incluindo carimbo de rede, calculadora de enlace óptico, tabela ábaco, parser de NSAP e gestão de clientes com banco de dados local.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

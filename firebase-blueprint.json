@@ -1,0 +1,167 @@
+{
+  "entities": {
+    "User": {
+      "title": "Usuário",
+      "description": "Perfil do usuário do sistema e função de acesso (role)",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "UID do usuário no Firebase Auth" },
+        "email": { "type": "string", "description": "E-mail do usuário" },
+        "displayName": { "type": "string", "description": "Nome de exibição" },
+        "role": { "type": "string", "enum": ["user", "admin", "super_admin"], "description": "Nível de privilégio do usuário" },
+        "active": { "type": "boolean", "description": "Status de conta ativa" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "active"]
+    },
+    "Device": {
+      "title": "Dispositivo",
+      "description": "Registro de dispositivo confiável ou cadastrado do usuário",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "UID do proprietário do dispositivo" },
+        "fcmToken": { "type": "string", "description": "Token do Firebase Cloud Messaging para Push" },
+        "deviceName": { "type": "string", "description": "Nome amigável do dispositivo" },
+        "platform": { "type": "string", "description": "Plataforma/SO" },
+        "browser": { "type": "string", "description": "Navegador em uso" },
+        "userAgent": { "type": "string", "description": "User Agent completo" },
+        "trusted": { "type": "boolean", "description": "Indica se o dispositivo é confiável para aprovar logins" },
+        "revoked": { "type": "boolean", "description": "Indica se o dispositivo teve o acesso revogado" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "lastSeenAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "trusted", "revoked"]
+    },
+    "AuthRequest": {
+      "title": "Solicitação de Autenticação",
+      "description": "Solicitação de login iniciada por um dispositivo não confiável pendente de aprovação via Push",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "UID do usuário tentando logar" },
+        "deviceId": { "type": "string", "description": "ID do novo dispositivo solicitante" },
+        "deviceName": { "type": "string", "description": "Nome do novo dispositivo" },
+        "platform": { "type": "string", "description": "Plataforma do novo dispositivo" },
+        "browser": { "type": "string", "description": "Navegador do novo dispositivo" },
+        "ipAddress": { "type": "string", "description": "Endereço IP da solicitação" },
+        "userAgent": { "type": "string", "description": "User Agent do novo dispositivo" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "expiresAt": { "type": "string", "format": "date-time" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "expired", "cancelled"] },
+        "approvedAt": { "type": "string", "format": "date-time" },
+        "rejectedAt": { "type": "string", "format": "date-time" },
+        "approvedByDeviceId": { "type": "string" },
+        "rejectedByDeviceId": { "type": "string" }
+      },
+      "required": ["userId", "deviceId", "status", "createdAt", "expiresAt"]
+    },
+    "AdminLog": {
+      "title": "Log de Auditoria",
+      "description": "Histórico de ações administrativas e de segurança no sistema",
+      "type": "object",
+      "properties": {
+        "actorUid": { "type": "string", "description": "UID de quem realizou a ação" },
+        "actorRole": { "type": "string", "description": "Role de quem realizou a ação" },
+        "action": { "type": "string", "description": "Nome da ação realizada" },
+        "targetUid": { "type": "string", "description": "UID do usuário/recurso afetado" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "metadata": { "type": "object", "description": "Dados adicionais de contexto da ação" }
+      },
+      "required": ["actorUid", "action", "timestamp"]
+    },
+    "Cliente": {
+      "title": "Cliente",
+      "description": "Registro de clientes, atendimentos, ordens de serviço e históricos",
+      "type": "object",
+      "properties": {
+        "id": { "type": "number", "description": "ID numérico identificador único" },
+        "numeroChamado": { "type": "string", "description": "Número do chamado / OS" },
+        "nomeCliente": { "type": "string", "description": "Nome do cliente" },
+        "endereco": { "type": "string", "description": "Endereço físico" },
+        "telefone": { "type": "string", "description": "Telefone de contato" },
+        "email": { "type": "string", "description": "E-mail de contato" },
+        "idProjeto": { "type": "string", "description": "Identificador do projeto" },
+        "idVantive": { "type": "string", "description": "ID Vantive" },
+        "numeroLP": { "type": "string", "description": "Número do LP" },
+        "equipamento": { "type": "string", "description": "Equipamento associado" },
+        "historico": { "type": "array", "description": "Histórico de atualizações do atendimento" },
+        "status": { "type": "string", "enum": ["aberto", "em_andamento", "aguardando", "concluido", "cancelado"] },
+        "prioridade": { "type": "string", "enum": ["baixa", "media", "alta", "urgente"] },
+        "dataPrevista": { "type": "string" },
+        "observacoes": { "type": "string" },
+        "dataCriacao": { "type": "string", "format": "date-time" },
+        "ultimaAtualizacao": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "numeroChamado", "nomeCliente", "status", "prioridade"]
+    },
+    "TaRecord": {
+      "title": "Termo de Atendimento",
+      "description": "Termos de atendimento contendo definições, horário de início, acionamento, uso de sobressalentes e resoluções",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID do registro no Firestore" },
+        "numeroTa": { "type": "string", "description": "Número identificador do TA" },
+        "definicoes": { "type": "string", "description": "Definições e escopo do atendimento" },
+        "dataInicio": { "type": "string", "description": "Data de início do atendimento" },
+        "horaInicio": { "type": "string", "description": "Horário de início" },
+        "horaAcionado": { "type": "string", "description": "Horário em que foi acionado" },
+        "sobressalenteNecessario": { "type": "boolean", "description": "Indica se foi necessário sobressalente" },
+        "numeroChamadoSobressalente": { "type": "string", "description": "Número do chamado do sobressalente" },
+        "suporteAtendente": { "type": "string", "description": "Nome do suporte que realizou o atendimento" },
+        "tecnicoN1Tx": { "type": "string", "description": "Nome do técnico de N1 TX" },
+        "resolucaoFalha": { "type": "string", "description": "Resolução detalhada da falha" },
+        "status": { "type": "string", "enum": ["correlação", "encerrado"], "description": "Status do atendimento" },
+        "historicoEdicoes": { "type": "array", "items": { "type": "string" }, "description": "Histórico de reaberturas e edições de TA encerrados" },
+        "dataCriacao": { "type": "string", "format": "date-time" },
+        "ultimaAtualizacao": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "numeroTa", "definicoes", "dataInicio", "horaInicio", "horaAcionado", "sobressalenteNecessario", "status"]
+    },
+    "RotaHL4": {
+      "title": "Rota HL4",
+      "description": "Registros e imagens PNG de mapas e rotas HL4",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "ID do documento no Firestore" },
+        "nome": { "type": "string", "description": "Nome original do arquivo PNG" },
+        "url": { "type": "string", "description": "URL de download no Firebase Storage ou DataURL" },
+        "storagePath": { "type": "string", "description": "Caminho do arquivo no Firebase Storage" },
+        "enviadoEm": { "type": "string", "format": "date-time", "description": "Data/hora do envio" },
+        "dataUrl": { "type": "string", "description": "Data URL otimizada salva diretamente no banco de dados" },
+        "tamanho": { "type": "string", "description": "Tamanho formatado do arquivo" },
+        "dimensoes": { "type": "string", "description": "Dimensões em pixels da imagem" }
+      },
+      "required": ["nome", "url", "storagePath", "enviadoEm"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "User",
+      "description": "Perfis dos usuários do sistema e papéis de acesso"
+    },
+    "/devices/{deviceId}": {
+      "schema": "Device",
+      "description": "Dispositivos cadastrados dos usuários e tokens FCM"
+    },
+    "/authRequests/{requestId}": {
+      "schema": "AuthRequest",
+      "description": "Solicitações de aprovação de acesso pendentes/aprovadas/recusadas"
+    },
+    "/adminLogs/{logId}": {
+      "schema": "AdminLog",
+      "description": "Logs de auditoria do sistema e operações de administração"
+    },
+    "/clientes/{clienteId}": {
+      "schema": "Cliente",
+      "description": "Armazena registros de atendimento de clientes no campo"
+    },
+    "/tas/{taId}": {
+      "schema": "TaRecord",
+      "description": "Armazena registros de Termos de Atendimento (TA)"
+    },
+    "/rotas_hl4/{rotaId}": {
+      "schema": "RotaHL4",
+      "description": "Armazena registros e links para imagens PNG de rotas HL4"
+    }
+  }
+}
